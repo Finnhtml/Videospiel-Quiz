@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <title>Videospiel-Quiz</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    html, body {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      font-family: "Segoe UI", sans-serif;
+      background: linear-gradient(to right, #1e3c72, #2a5298);
+      color: #333;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .container {
+      background: #fff;
+      padding: 30px;
+      border-radius: 16px;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+      max-width: 500px;
+      width: 90%;
+      text-align: center;
+      margin: 20px;
+    }
+
+    h1 {
+      color: #2a5298;
+      margin-bottom: 20px;
+    }
+
+    button {
+      background-color: #2a5298;
+      color: white;
+      border: none;
+      padding: 12px 20px;
+      margin: 8px 0;
+      width: 100%;
+      font-size: 16px;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+
+    button:hover {
+      background-color: #1e3c72;
+    }
+
+    .answers button {
+      background-color: #e0e0e0;
+      color: #000;
+    }
+
+    .answers button.correct {
+      background-color: #a2e3a2 !important;
+    }
+
+    .answers button.wrong {
+      background-color: #f3a2a2 !important;
+    }
+
+    #result {
+      font-weight: bold;
+      font-size: 20px;
+      margin-top: 20px;
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    form {
+      margin-top: 30px;
+      text-align: left;
+    }
+
+    form label {
+      display: block;
+      margin: 10px 0 5px;
+    }
+
+    form input {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      margin-bottom: 10px;
+    }
+
+    #my-form-status {
+      margin-top: 10px;
+      font-weight: bold;
+      color: green;
+    }
+
+    @media (max-width: 600px) {
+      .container {
+        padding: 20px;
+      }
+
+      button {
+        font-size: 14px;
+        padding: 10px;
+      }
+
+      h1 {
+        font-size: 22px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Videospiel-Quiz</h1>
+
+    <div id="category-select">
+      <p>Wähle ein Spiel:</p>
+      <button onclick="startQuiz('fortnite')">Fortnite</button>
+      <button onclick="startQuiz('minecraft')">Minecraft</button>
+      <button onclick="startQuiz('other')">Weitere Spiele</button>
+    </div>
+
+    <div id="quiz" class="hidden">
+      <div id="question" class="question"></div>
+      <div id="answers" class="answers"></div>
+      <button onclick="nextQuestion()">Nächste Frage</button>
+    </div>
+
+    <div id="result" class="hidden"></div>
+    <button id="restart" class="hidden" onclick="location.reload()">Zurück zur Auswahl</button>
+
+    <form id="my-form" action="https://formspree.io/f/xgvadory" method="POST">
+      <h2>Vorschlag oder Feedback?</h2>
+      <label for="email">Deine E-Mail (optional):</label>
+      <input type="email" name="email" placeholder="dein@email.de" />
+
+      <label for="message">Deine Nachricht:</label>
+      <input type="text" name="message" placeholder="Ich schlage vor, dass..." required />
+
+      <button id="my-form-button">Absenden</button>
+      <p id="my-form-status"></p>
+    </form>
+  </div>
+
+  <script>
+    const quizzes = {
+      fortnite: [
+        { question: "Wann wurde Fortnite veröffentlicht?", answers: ["2015", "2017", "2018", "2019"], correct: 1 },
+        { question: "Wie viele Spieler landen zu Beginn eines Matches?", answers: ["50", "75", "100", "120"], correct: 2 },
+        { question: "Was ist der seltenste Skin in Fortnite?", answers: ["Renegade Raider", "Peely", "Dark Voyager", "Midas"], correct: 0 },
+        { question: "Welche Waffe wurde NICHT aus dem Spiel entfernt?", answers: ["Drum Gun", "Pump Shotgun", "Minigun", "Zapper Trap"], correct: 2 },
+        { question: "Wie heißt der PvE-Modus von Fortnite?", answers: ["Überleben", "Rette die Welt", "Zombie-Modus", "Survivor Mode"], correct: 1 },
+      ],
+      minecraft: [
+        { question: "Wer hat Minecraft erfunden?", answers: ["Markus Persson", "Elon Musk", "Notch", "Steve"], correct: 0 },
+        { question: "Welche Kreatur explodiert?", answers: ["Zombie", "Skelett", "Creeper", "Enderman"], correct: 2 },
+        { question: "Wie viele Holzarten gibt es in Minecraft (Stand 2024)?", answers: ["6", "9", "11", "13"], correct: 3 },
+        { question: "Wie aktiviert man ein Endportal?", answers: ["Redstone", "Enderperlen", "Enderaugen", "Obsidian"], correct: 2 },
+        { question: "Was passiert, wenn ein Blitz in einen Creeper einschlägt?", answers: ["Er stirbt", "Er wird zu TNT", "Er wird elektrisch geladen", "Er teleportiert sich"], correct: 2 },
+      ],
+      other: [
+        { question: "In welchem Spiel gibt es Pokébälle?", answers: ["Zelda", "Call of Duty", "Pokémon", "Among Us"], correct: 2 },
+        { question: "Welches Spiel ist bekannt für das Battle-Royale-Konzept neben Fortnite?", answers: ["GTA", "PUBG", "Roblox", "Overwatch"], correct: 1 },
+        { question: "Was ist der Hauptcharakter in Super Mario?", answers: ["Luigi", "Mario", "Toad", "Yoshi"], correct: 1 },
+        { question: "In welchem Spiel flieht man vor einem Impostor?", answers: ["Among Us", "Dead by Daylight", "The Forest", "Resident Evil"], correct: 0 },
+        { question: "Was ist kein echter Spieltitel?", answers: ["Clash of Clans", "League of Heroes", "Call of Duty", "Rocket League"], correct: 1 },
+      ]
+    };
+
+    let currentQuiz = [], currentQuestion = 0, score = 0;
+
+    function startQuiz(category) {
+      currentQuiz = quizzes[category];
+      currentQuestion = 0;
+      score = 0;
+      document.getElementById('category-select').classList.add('hidden');
+      document.getElementById('quiz').classList.remove('hidden');
+      document.getElementById('result').classList.add('hidden');
+      document.getElementById('restart').classList.add('hidden');
+      showQuestion();
+    }
+
+    function showQuestion() {
+      const q = currentQuiz[currentQuestion];
+      document.getElementById('question').textContent = q.question;
+      const answersDiv = document.getElementById('answers');
+      answersDiv.innerHTML = '';
+      q.answers.forEach((a, i) => {
+        const btn = document.createElement('button');
+        btn.textContent = a;
+        btn.onclick = () => checkAnswer(i, btn);
+        answersDiv.appendChild(btn);
+      });
+    }
+
+    function checkAnswer(index, btn) {
+      const correctIndex = currentQuiz[currentQuestion].correct;
+      const buttons = document.querySelectorAll('#answers button');
+      buttons.forEach((b, i) => {
+        b.disabled = true;
+        if (i === correctIndex) b.classList.add("correct");
+        else if (i === index) b.classList.add("wrong");
+      });
+      if (index === correctIndex) score++;
+    }
+
+    function nextQuestion() {
+      currentQuestion++;
+      if (currentQuestion < currentQuiz.length) {
+        showQuestion();
+      } else {
+        document.getElementById('quiz').classList.add('hidden');
+        document.getElementById('result').classList.remove('hidden');
+        document.getElementById('restart').classList.remove('hidden');
+        document.getElementById('result').textContent = `Du hast ${score} von ${currentQuiz.length} Punkten erreicht!`;
+      }
+    }
+
+    // AJAX Formular
+    var form = document.getElementById("my-form");
+    async function handleSubmit(event) {
+      event.preventDefault();
+      var status = document.getElementById("my-form-status");
+      var data = new FormData(event.target);
+      fetch(event.target.action, {
+        method: form.method,
+        body: data,
+        headers: {
+          'Accept': 'application/json'
+        }
+      }).then(response => {
+        if (response.ok) {
+          status.innerHTML = "Danke für deine Nachricht!";
+          form.reset();
+        } else {
+          response.json().then(data => {
+            if (Object.hasOwn(data, 'errors')) {
+              status.innerHTML = data["errors"].map(error => error["message"]).join(", ")
+            } else {
+              status.innerHTML = "Ein Fehler ist aufgetreten!";
+            }
+          })
+        }
+      }).catch(error => {
+        status.innerHTML = "Ein Fehler ist aufgetreten!";
+      });
+    }
+    form.addEventListener("submit", handleSubmit);
+  </script>
+</body>
+</html>
